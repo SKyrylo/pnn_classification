@@ -3,7 +3,7 @@ import numpy as np
 
 
 class PNN:
-    def __init__(self, df: pd.DataFrame):
+    def __init__(self, df: pd.DataFrame, sigma: float=0.5):
         """
         DataFrame info:
             1. Must contain target column named "target"
@@ -20,10 +20,9 @@ class PNN:
         assert all(check), "All feature columns must be type 'float64' or 'int64'!"
         
         self.num_features = len(self.features.columns)
-        self.classes = self.target.unique()
 
         self.input_layer = InputLayer(self.num_features)
-        self.pattern_layer = PatternLayer(df)
+        self.pattern_layer = PatternLayer(self.features, sigma=sigma)
         self.summation_layer = SummationLayer(self.target)
         self.decision_layer = DecisionLayer()
     
@@ -44,9 +43,11 @@ class InputLayer:
 
 
 class PatternLayer:
-    def __init__(self, df):
+    def __init__(self, df, sigma):
         self.num_features = len(df.columns)
         self.num_samples = len(df)
+
+        self.sigma_square = sigma**2
 
         self.weights = []
         for i in range(self.num_samples):
@@ -60,7 +61,8 @@ class PatternLayer:
 
         outs = []
         for i in range(len(self.weights)):
-            outs.append(np.exp(-np.sum((self.weights[i]-features)**2)))
+            euclidean_distance = np.sum((self.weights[i]-features)**2)
+            outs.append(np.exp(-euclidean_distance/self.sigma_square))
 
         return np.array([outs]).T
 

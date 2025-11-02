@@ -1,6 +1,7 @@
 ﻿from classes.pnn import PNN
 import pandas as pd
 import numpy as np
+from config import get_config
 
 
 def get_accuracy(preds: list[str], gt: list[str]):
@@ -8,7 +9,9 @@ def get_accuracy(preds: list[str], gt: list[str]):
     return sum(bools) / len(bools)
 
 
-def main():
+def main(config):
+    sigma = config['sigma']
+
     print("===== PNN for classification of samples with N features =====")
 
     # Training data for testing purposes
@@ -18,7 +21,7 @@ def main():
     )
 
     # ----- Initialize PNN model (trained when initialized) -----
-    pnn = PNN(df)
+    pnn = PNN(df, sigma)
 
     # ----- Validate model to see accuracy -----
     preds, gt = [], df.target.to_list()
@@ -49,4 +52,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    config = get_config()
+    main(config)
